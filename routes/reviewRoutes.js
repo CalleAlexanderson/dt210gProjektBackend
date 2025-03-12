@@ -3,10 +3,10 @@ async function reviewRoutes(fastify, options) {
 
     const reviewBodyJsonSchema = {
         type: 'object',
-        required: ['userId', 'bookId', 'score'],
+        required: ['username', 'bookid', 'score'],
         properties: {
-            userId: { type: 'object' },
-            bookId: { type: 'object' },
+            username: { type: 'string' },
+            bookid: { type: 'string' },
             score: { type: 'number'},
             date: { type: 'date-time' }, 
             content: { type: 'string' },
@@ -20,17 +20,32 @@ async function reviewRoutes(fastify, options) {
 
     fastify.post('/add/review', reviewSchema, async (request, reply) => {
         reply.header("Access-Control-Allow-Origin", "*");
-        return { message: "add funkar"}
-        await request.jwtVerify()
+        // return { message: "add funkar"}
+        // await request.jwtVerify()
 
 
-        let { title, author, content } = request.body;
+        let { username, bookid, score,  content} = request.body;
         let date = new Date();
-        if (title.length === 0 || author.length === 0 || content.length === 0) {
-            return { message: "fälten 'title' 'author' och 'content' får inte lämnas tomma" }
+
+
+        if (username === undefined) {
+          return { message: "fältet 'username' måste skickas med i body" }
         }
 
-        const result = await collection.insertOne({ title, author, content, date })
+        if (bookid === undefined) {
+          return { message: "fältet 'bookid' måste skickas med i body" }
+        }
+
+        if (score === undefined) {
+          return { message: "fältet 'score' måste skickas med i body" }
+        }
+
+        if (username.length === 0 || bookid.length === 0 || score.length === 0) {
+            return { message: "fälten 'username', 'bookid' och 'score' får inte lämnas tomma" }
+        }
+
+        // return { message: "postat review"}
+        const result = await collection.insertOne({ username, bookid, score, date, content })
         return result
     })
 
