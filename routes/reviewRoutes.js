@@ -1,57 +1,109 @@
 async function reviewRoutes(fastify, options) {
-    const collection = fastify.mongo.db.collection('reviews')
+  const collection = fastify.mongo.db.collection('reviews')
 
-    const reviewBodyJsonSchema = {
-        type: 'object',
-        required: ['username', 'bookid', 'score'],
-        properties: {
-            username: { type: 'string' },
-            bookid: { type: 'string' },
-            score: { type: 'number'},
-            date: { type: 'date-time' }, 
-            content: { type: 'string' },
+  const reviewBodyJsonSchema = {
+    type: 'object',
+    required: ['username', 'bookid', 'rating'],
+    properties: {
+      username: { type: 'string' },
+      title: { type: 'string' },
+      bookid: { type: 'string' },
+      rating: { type: 'number' },
+      date: { type: 'date-time' },
+      content: { type: 'string' },
 
-        }
+    }
+  }
+
+  const reviewSchema = {
+    body: reviewBodyJsonSchema,
+  }
+
+  fastify.post('/add/review', reviewSchema, async (request, reply) => {
+    reply.header("Access-Control-Allow-Origin", "*");
+    // return { message: "add funkar"}
+    await request.jwtVerify()
+    console.log("lägger till review");
+
+
+    let { username, title, bookid, rating, content } = request.body;
+    let date = new Date();
+
+
+    const res = await collection.find({ username: username, bookid: bookid }).toArray();
+    if (res[0] != undefined) {
+      return { message: "Review finns redan för denna bok" }
     }
 
-    const reviewSchema = {
-        body: reviewBodyJsonSchema,
+
+    if (username === undefined) {
+      return { message: "fältet 'username' måste skickas med i body" }
     }
 
-    fastify.post('/add/review', reviewSchema, async (request, reply) => {
-        reply.header("Access-Control-Allow-Origin", "*");
-        // return { message: "add funkar"}
-        // await request.jwtVerify()
+    if (bookid === undefined) {
+      return { message: "fältet 'bookid' måste skickas med i body" }
+    }
+
+    if (rating === undefined) {
+      return { message: "fältet 'rating' måste skickas med i body" }
+    }
+
+    if (username.length === 0 || bookid.length === 0) {
+      return { message: "fälten 'username', 'bookid' får inte lämnas tomma" }
+    }
+
+    // return { message: "postat review"}
+    const result = await collection.insertOne({ username, title, bookid, rating, date, content })
+    return result
+  })
+
+  fastify.get('/reviews/:id', async (request, reply) => {
+    reply.header("Access-Control-Allow-Origin", "*");
+    // return { message: "reviews funkar"}
+    const id = request.params.id;
+
+    const result = await collection.find({bookid: id}).toArray()
+    if (result.length === 0) {
+      return { message: "inga bloginlägg hittades" }
+    }
+    return result
+  })
+
+  fastify.get('/review/:id', async (request, reply) => {
+    reply.header("Access-Control-Allow-Origin", "*");
+    // return { message: "single review funkar"}
+    const id = request.params.id;
+
+    const result = await collection.findOne({ bookid: id })
+    return result
+  })
+
+  fastify.delete('/delete/review/:id', async (request, reply) => {
+    reply.header("Access-Control-Allow-Origin", "*");
+    return { message: "delete funkar" }
+
+    await request.jwtVerify()
+    const role = request.body.role;
+    const id = new ObjectId(request.params.id);
+
+    if (role === undefined) {
+      return { message: "fälte 'role' krävs i body" }
+    }
+
+    if (role != "admin") {
+      return { message: "Du har inte tillgång till denna funktion", deleted: false }
+    }
+    const result = await collection.deleteOne({ _id: id })
+    if (result.deletedCount == 0) {
+      return { message: "Bloginlägg med id '" + request.params.id + "' finns inte" }
+    }
+    return { deleted: true }
+  })
 
 
-        let { username, bookid, score,  content} = request.body;
-        let date = new Date();
-
-
-        if (username === undefined) {
-          return { message: "fältet 'username' måste skickas med i body" }
-        }
-
-        if (bookid === undefined) {
-          return { message: "fältet 'bookid' måste skickas med i body" }
-        }
-
-        if (score === undefined) {
-          return { message: "fältet 'score' måste skickas med i body" }
-        }
-
-        if (username.length === 0 || bookid.length === 0 || score.length === 0) {
-            return { message: "fälten 'username', 'bookid' och 'score' får inte lämnas tomma" }
-        }
-
-        // return { message: "postat review"}
-        const result = await collection.insertOne({ username, bookid, score, date, content })
-        return result
-    })
-
-
-    // körs innan schema validering
+  // körs innan schema validering
   fastify.addHook('preValidation', convertBody);
+
 
   // middelware för att konvertera body i formatet string till ett object
   function convertBody(request, reply, next) {

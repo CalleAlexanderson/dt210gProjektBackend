@@ -85,8 +85,8 @@ async function loginRoutes(fastify, options) {
     console.log("encryot: " + password);
 
     const result = await users.insertOne({ username, password })
-
-    return result
+    console.log(result);
+    return { accountCreated: true }
   })
 
   fastify.post('/verify', async (request, reply) => {
