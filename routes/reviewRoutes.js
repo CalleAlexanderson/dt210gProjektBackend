@@ -81,23 +81,12 @@ async function reviewRoutes(fastify, options) {
 
   fastify.delete('/delete/review/:id', async (request, reply) => {
     reply.header("Access-Control-Allow-Origin", "*");
-    return { message: "delete funkar" }
+    // return { message: "delete funkar" }
 
     await request.jwtVerify()
-    const role = request.body.role;
     const id = new ObjectId(request.params.id);
 
-    if (role === undefined) {
-      return { message: "fälte 'role' krävs i body" }
-    }
-
-    if (role != "admin") {
-      return { message: "Du har inte tillgång till denna funktion", deleted: false }
-    }
     const result = await collection.deleteOne({ _id: id })
-    if (result.deletedCount == 0) {
-      return { message: "Bloginlägg med id '" + request.params.id + "' finns inte" }
-    }
     return { deleted: true }
   })
 

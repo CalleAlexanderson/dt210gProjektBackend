@@ -5,10 +5,9 @@ async function updateRoutes(fastify, options) {
 
   fastify.put('/update/:id', async (request, reply) => {
     reply.header("Access-Control-Allow-Origin", "*");
-    return { message: "update funkar"}
     await request.jwtVerify()
 
-    let { title, content } = request.body;
+    let { title, content, rating } = request.body;
     let date = new Date();
     const id = new ObjectId(request.params.id);
 
@@ -23,7 +22,7 @@ async function updateRoutes(fastify, options) {
       return { message: "fältet 'content' får inte lämnas tomt" }
     }
 
-    const result = await collection.updateOne({ _id: id }, { $set: { title: title, content: content, date: date } })
+    const result = await collection.updateOne({ _id: id }, { $set: { title: title, content: content, date: date, rating: rating } })
 
     if (result.matchedCount == 0) {
       return { message: " Blogginlägg med id '" + request.params.id + "' kunde inte uppdateras då det inte hittades", uppdated: false }
