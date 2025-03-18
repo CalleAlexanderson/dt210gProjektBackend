@@ -1,3 +1,5 @@
+const { ObjectId } = require("@fastify/mongodb");
+
 async function reviewRoutes(fastify, options) {
   const collection = fastify.mongo.db.collection('reviews')
 
@@ -63,18 +65,17 @@ async function reviewRoutes(fastify, options) {
     const id = request.params.id;
 
     const result = await collection.find({bookid: id}).toArray()
-    if (result.length === 0) {
-      return { message: "inga bloginlägg hittades" }
-    }
     return result
   })
 
-  fastify.get('/review/:id', async (request, reply) => {
+  fastify.get('/review/:id/:user', async (request, reply) => {
     reply.header("Access-Control-Allow-Origin", "*");
     // return { message: "single review funkar"}
-    const id = request.params.id;
-
-    const result = await collection.findOne({ bookid: id })
+    const id = request.params.id
+    const username = request.params.user
+    
+    const result = await collection.findOne({  username: username, bookid: id })
+    console.log(result);
     return result
   })
 
