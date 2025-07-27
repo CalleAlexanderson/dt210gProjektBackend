@@ -54,7 +54,6 @@ async function reviewRoutes(fastify, options) {
       return { message: "fälten 'username', 'bookid' får inte lämnas tomma" }
     }
 
-    // return { message: "postat review"}
     const result = await collection.insertOne({ username, title, bookid, rating, date, content })
     return result
   })
