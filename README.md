@@ -42,8 +42,9 @@ Nedan finns de olika sätt API:et kan anropas:
 |POST   |/account | Tar 2 parametrar från body: "username" och "passsword", och om dessa inte är tomma samt att värdet på username inte redan finns i collection users så skapas en nytt dokument i collectionen.                                                       |
 |POST    |/verify | Kollar om den JWT som skickats med är giltig.                          |
 |POST    |/add/review | Tar 5 parametrar från body: "username", "title", "bookid", "rating", "content" sedan skapas även ett date object och om alla dessa inte är tomma skapas en nytt dokument i collection "reviews".                                               |
-|DELETE |/delete/:id | Tar 1 parameter från body: "kategori" sedan kollas den collection vars namn är samma som "kategori" om det "id" som skickats med i url matchar med ett _id på ett dokument i den collection och om det matchar tas det dokumentet bort.                                               |
-|PUT |/updateamount/:id | Tar 2 parametrar från body: "kategori" och "antal", sedan kollas den collection vars namn är samma som "kategori" om det "id" som skickats med i url matchar med ett _id på ett dokument i den collection och om det matchar ändras det "antal" som ligger i dokument till det "antal" som skickades med i body.                                               |
+|DELETE |/delete/review/:id | Raderar det dokument från collection "reviews" där parametern "id" matchar med fältet "_id".                                               |
+
+|PUT |/update/:id | Tar 3 parametrar från body: "title", "content" och "rating", det dokument från collection "reviews" där parametern "id" matchar med fältet "_id" ändras värdet fälten "title", "content" och "rating" till det som skicades i body.                                               |
 
 Datan på databasen lagras i BSON format och kan se ut så här i collection "users":
 ```
